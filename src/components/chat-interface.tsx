@@ -27,7 +27,7 @@ export default function ChatInterface() {
   useEffect(() => {
     const loadCSVData = async () => {
       try {
-        const response = await fetch('/influencer-list.csv');
+        const response = await fetch('/influencer1.csv');
         const csvText = await response.text();
         const data = parseCSV(csvText);
         const contextString = dataToString(data);
