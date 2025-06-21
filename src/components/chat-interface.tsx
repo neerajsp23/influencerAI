@@ -3,11 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Send, User, Bot, Sparkles } from 'lucide-react';
-import { parseCSV, dataToString, InfluencerData } from '@/lib/csv-parser';
+import { parseCSV, dataToString } from '@/lib/csv-parser';
 
 interface Message {
   id: string;
