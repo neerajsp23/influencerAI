@@ -5,9 +5,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+interface ConversationMessage {
+  type: 'user' | 'bot';
+  content: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { context, user_input } = await request.json();
+    const { context, user_input, conversation_history } = await request.json();
 
     if (!context || !user_input) {
       return NextResponse.json(
@@ -23,24 +28,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = `Based on the information provided on 120 Instagram influencers:
-${context}
+    // Build the conversation messages
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+      {
+        role: 'system',
+        content: `You are a helpful assistant that provides insights about Instagram influencers based on the provided dataset. Be concise and informative in your responses.
 
-Answer the user question:
-${user_input}`;
+Based on the information provided on Instagram influencers:
+${context}`
+      }
+    ];
+
+    // Add conversation history if provided
+    if (conversation_history && Array.isArray(conversation_history)) {
+      conversation_history.forEach((message: ConversationMessage) => {
+        if (message.type === 'user') {
+          messages.push({
+            role: 'user',
+            content: message.content
+          });
+        } else if (message.type === 'bot') {
+          messages.push({
+            role: 'assistant',
+            content: message.content
+          });
+        }
+      });
+    }
+
+    // Add the current user input
+    messages.push({
+      role: 'user',
+      content: user_input
+    });
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant that provides insights about Instagram influencers based on the provided dataset.*If you do not have information on the question politely decline*. Be concise and informative in your responses.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
+      model: 'gpt-3.5-turbo',
+      messages: messages,
       max_tokens: 500,
       temperature: 0.7,
     });

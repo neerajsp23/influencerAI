@@ -1,3 +1,5 @@
+import Papa from 'papaparse';
+
 export interface InfluencerData {
   Username: string;
   'Full Name': string;
@@ -18,28 +20,36 @@ export interface InfluencerData {
 }
 
 export function parseCSV(csvText: string): InfluencerData[] {
-  const lines = csvText.trim().split('\n');
-  const headers = lines[0].split(',').map(header => header.trim());
-  const data: InfluencerData[] = [];
+  const results = Papa.parse(csvText, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (header) => header.trim(),
+    transform: (value) => value.trim()
+  });
 
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(value => value.trim());
-    const row: any = {};
+  if (results.errors.length > 0) {
+    console.warn('CSV parsing warnings:', results.errors);
+  }
 
-    headers.forEach((header, index) => {
-      const value = values[index] || '';
+  const data: InfluencerData[] = results.data.map((row: any) => {
+    const cleanedRow: any = {};
+    
+    // Process each field
+    Object.keys(row).forEach(key => {
+      const value = row[key] || '';
+      
       // Only include non-empty values for optional fields
-      if (['Creator City', 'Gender', 'Language', 'Creator Country', 'Email', 'Phone', 'Other Links'].includes(header)) {
-        if (value && value !== 'null' && value !== '') {
-          row[header] = value;
+      if (['Creator City', 'Gender', 'Language', 'Creator Country', 'Email', 'Phone', 'Other Links'].includes(key)) {
+        if (value && value !== 'null' && value !== '' && value.trim() !== '') {
+          cleanedRow[key] = value.trim();
         }
       } else {
-        row[header] = value;
+        cleanedRow[key] = value.trim();
       }
     });
 
-    data.push(row as InfluencerData);
-  }
+    return cleanedRow as InfluencerData;
+  });
 
   return data;
 }
