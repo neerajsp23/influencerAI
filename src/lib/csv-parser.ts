@@ -1,25 +1,10 @@
 import Papa from 'papaparse';
 
-export interface InfluencerData {
-  Username: string;
-  'Full Name': string;
-  Introduction: string;
-  Verified: string;
-  'Follower Count': string;
-  'Creator City'?: string;
-  'Engagement Rate': string;
-  'Average Likes': string;
-  Gender?: string;
-  Language?: string;
-  'Creator Country'?: string;
-  Email?: string;
-  Phone?: string;
-  'Other Links'?: string;
-  'Profile Url': string;
-  'Image url': string;
+export interface GenericCSVData {
+  [key: string]: string;
 }
 
-export function parseCSV(csvText: string): InfluencerData[] {
+export function parseCSV(csvText: string): GenericCSVData[] {
   const results = Papa.parse(csvText, {
     header: true,
     skipEmptyLines: true,
@@ -31,48 +16,56 @@ export function parseCSV(csvText: string): InfluencerData[] {
     console.warn('CSV parsing warnings:', results.errors);
   }
 
-  const data: InfluencerData[] = results.data.map((row: any) => {
-    const cleanedRow: any = {};
+  const data: GenericCSVData[] = results.data.map((row: any) => {
+    const cleanedRow: GenericCSVData = {};
     
-    // Process each field
+    // Process each field and remove empty/null values
     Object.keys(row).forEach(key => {
       const value = row[key] || '';
-      
-      // Only include non-empty values for optional fields
-      if (['Creator City', 'Gender', 'Language', 'Creator Country', 'Email', 'Phone', 'Other Links'].includes(key)) {
-        if (value && value !== 'null' && value !== '' && value.trim() !== '') {
-          cleanedRow[key] = value.trim();
-        }
-      } else {
+      if (value && value !== 'null' && value !== '' && value.trim() !== '') {
         cleanedRow[key] = value.trim();
       }
     });
 
-    return cleanedRow as InfluencerData;
+    return cleanedRow;
   });
 
   return data;
 }
 
-export function dataToString(data: InfluencerData[]): string {
-  return data.map(influencer => {
-    const fields = [
-      `Username: ${influencer.Username}`,
-      `Full Name: ${influencer['Full Name']}`,
-      `Introduction: ${influencer.Introduction}`,
-      `Verified: ${influencer.Verified}`,
-      `Follower Count: ${influencer['Follower Count']}`,
-      `Engagement Rate: ${influencer['Engagement Rate']}`,
-      `Average Likes: ${influencer['Average Likes']}`,
-      `Profile URL: ${influencer['Profile Url']}`,
-      ...(influencer['Creator City'] ? [`City: ${influencer['Creator City']}`] : []),
-      ...(influencer.Gender ? [`Gender: ${influencer.Gender}`] : []),
-      ...(influencer.Language ? [`Language: ${influencer.Language}`] : []),
-      ...(influencer['Creator Country'] ? [`Country: ${influencer['Creator Country']}`] : []),
-      ...(influencer.Email ? [`Email: ${influencer.Email}`] : []),
-      ...(influencer.Phone ? [`Phone: ${influencer.Phone}`] : []),
-      ...(influencer['Other Links'] ? [`Other Links: ${influencer['Other Links']}`] : [])
-    ];
-    return fields.join(', ');
-  }).join('\n');
+export function dataToString(data: GenericCSVData[]): string {
+  if (data.length === 0) {
+    return 'No data found in the CSV file.';
+  }
+
+  // Get all unique column names
+  const allColumns = new Set<string>();
+  data.forEach(row => {
+    Object.keys(row).forEach(key => allColumns.add(key));
+  });
+  const columns = Array.from(allColumns);
+
+  // Create a summary of the data
+  const summary = [
+    `Dataset Summary:`,
+    `- Total records: ${data.length}`,
+    `- Columns: ${columns.join(', ')}`,
+    `- Sample data:`,
+    ''
+  ];
+
+  // Add first few rows as examples
+  const sampleSize = Math.min(5, data.length);
+  for (let i = 0; i < sampleSize; i++) {
+    const row = data[i];
+    const rowData = columns.map(col => `${col}: ${row[col] || 'N/A'}`).join(', ');
+    summary.push(`Row ${i + 1}: ${rowData}`);
+  }
+
+  // If there are more rows, indicate that
+  if (data.length > sampleSize) {
+    summary.push(`... and ${data.length - sampleSize} more rows`);
+  }
+
+  return summary.join('\n');
 } 
