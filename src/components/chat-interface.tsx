@@ -3,11 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Send, User, Bot, Sparkles, Upload, X, FileText, FileSpreadsheet } from 'lucide-react';
-import { parseCSV, dataToString, GenericCSVData } from '@/lib/csv-parser';
+import { Send, User, Bot, Upload, X, FileText, FileSpreadsheet } from 'lucide-react';
+import { parseCSV, dataToString } from '@/lib/csv-parser';
 
 interface Message {
   id: string;
@@ -242,7 +239,7 @@ export default function ChatInterface() {
                   File Loaded Successfully!
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 max-w-lg mx-auto text-lg mb-8">
-                  Your CSV file "{uploadedFileName}" has been loaded. You can now ask questions about your data!
+                  Your CSV file &quot;{uploadedFileName}&quot; has been loaded. You can now ask questions about your data!
                 </p>
                 <div className="space-y-4">
                   <p className="text-base font-semibold text-gray-700 dark:text-gray-300">Try asking:</p>
