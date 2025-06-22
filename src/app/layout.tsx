@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Influencer AI",
-  description: "Chat with AI about Instagram influencer data",
+  title: "AskCSV",
+  description: "Chat with AI about your CSV data",
 };
 
 export default function RootLayout({
